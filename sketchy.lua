@@ -254,11 +254,11 @@ local function drawWorld (self, world)
     -- draw border around viewport
     lg.setColor(255, 255, 255, 64)
     lg.rectangle('line', x, y, w * 2, h * 2)
-	-- lg.setScissor(x, y, w * 2, h * 2)
+    -- lg.setScissor(x, y, w * 2, h * 2)
     
     -- translate center of viewport to origin; rotate to angle
-	lg.translate(x + w, y + h)
-	lg.rotate(self.angle)
+    lg.translate(x + w, y + h)
+    lg.rotate(self.angle)
 	
     -- translate camera position to center of viewport; scale
     lg.translate(-cx * s, -cy * s)
