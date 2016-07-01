@@ -360,11 +360,8 @@ local function getPresenter (self, object)
     end
 end
 
-local weakKeyMeta = { __mode = 'k' }
-
 return function ()
     return {
-        presenters = setmetatable({}, weakKeyMeta),
         -- default values
         left = 0,
         top = 0,
