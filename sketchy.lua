@@ -36,12 +36,14 @@ local jointMethodByType = {
     distance = 'drawDistanceJoint', 
     friction = 'drawFrictionJoint',
     gear = 'drawGearJoint',
+    motor = 'drawMotorJoint',
     mouse = 'drawMouseJoint',
     prismatic = 'drawPrismaticJoint',
     pulley = 'drawPulleyJoint',
     revolute = 'drawRevoluteJoint',
     rope = 'drawRopeJoint',
     weld = 'drawWeldJoint',
+    wheel = 'drawWheelJoint',
 }
 
 local function drawDistanceJoint (self, joint)
@@ -62,6 +64,13 @@ local function drawGearJoint (self, joint)
     -- not yet implemented
 end
 
+local function drawMotorJoint (self, joint)
+    local x1, y1, x2, y2 = joint:getAnchors()
+    lg.setColor(0, 160, 160, 128)
+    lg.line(x1, y1, x2, y2)
+    lg.points(x1, y1, x2, y2)
+end
+
 local function drawMouseJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
     lg.setColor(0, 255, 255, 128)
@@ -71,7 +80,7 @@ end
 
 local function drawPrismaticJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(0, 255, 128, 128)
+    lg.setColor(128, 192, 160, 128)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
@@ -103,6 +112,13 @@ end
 local function drawWeldJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
     lg.setColor(255, 128, 0, 128)
+    lg.line(x1, y1, x2, y2)
+    lg.points(x1, y1, x2, y2)
+end
+
+local function drawWheelJoint (self, joint)
+    local x1, y1, x2, y2 = joint:getAnchors()
+    lg.setColor(128, 160, 128, 128)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
@@ -150,9 +166,6 @@ local function drawContact (self, contact)
 end
 
 local function drawFixture (self, fixture)
-    local x1, y1, x2, y2 = fixture:getBoundingBox()
-    lg.setColor(255, 255, 255, 64)
-    lg.rectangle('line', x1, y1, x2 - x1, y2 - y1)
     lg.setColor(0, 0, 255, 128)
     self:drawShape(fixture:getShape(), fixture)
 end
@@ -161,6 +174,13 @@ local function drawShape (self, shape, fixture)
     local f = self[shapeMethodByType[shape:getType()]]
     if f then
         f(self, shape, fixture)
+    end
+end
+
+local function drawJoint (self, joint)
+    local f = self[jointMethodByType[joint:getType()]]
+    if f then
+        f(self, joint)
     end
 end
 
@@ -190,17 +210,13 @@ local function presentJoint (self, joint)
     if self.drawnObjects[joint] then return end
     self.drawnObjects[joint] = true
     
-    -- presenter
     local present = self:getPresenter(joint)
     if present then
         local finished = present(joint)
         if finished then return finished end
     end
     
-    local f = self[jointMethodByType[joint:getType()]]
-    if f then
-        f(self, joint)
-    end
+    self:drawJoint(joint)
 end
 
 local function screenToWorld (self, px, py)
@@ -250,11 +266,6 @@ local function drawWorld (self, world)
     
     lg.setLineWidth(self.fatness / self.scale)
     lg.setPointSize(2 * self.fatness)
-    
-    -- draw border around viewport
-    lg.setColor(255, 255, 255, 64)
-    lg.rectangle('line', x, y, w * 2, h * 2)
-    -- lg.setScissor(x, y, w * 2, h * 2)
     
     -- translate center of viewport to origin; rotate to angle
     lg.translate(x + w, y + h)
@@ -379,6 +390,7 @@ return function ()
         drawBodyJoints = drawBodyJoints,
         drawContact = drawContact,
         drawFixture = drawFixture,
+        drawJoint = drawJoint,
         drawShape = drawShape,
         drawWorld = drawWorld,
         -- shape types
@@ -390,12 +402,14 @@ return function ()
         drawDistanceJoint = drawDistanceJoint,
         drawFrictionJoint = drawFrictionJoint,
         drawGearJoint = drawGearJoint,
+        drawMotorJoint = drawMotorJoint,
         drawMouseJoint = drawMouseJoint,
         drawPrismaticJoint = drawPrismaticJoint,
         drawPulleyJoint = drawPulleyJoint,
         drawRevoluteJoint = drawRevoluteJoint,
         drawRopeJoint = drawRopeJoint,
         drawWeldJoint = drawWeldJoint,
+        drawWheelJoint = drawWheelJoint,
         -- presenter hooks
         presentBody = presentBody,
         presentFixture = presentFixture,
