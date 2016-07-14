@@ -284,8 +284,8 @@ local function drawWorld (self, world)
             local i = #relatedBodies + 1
             relatedBodies[i] = body
             relatedBodies[body] = i
-            self:presentFixture(fixture)
         end
+        self:presentFixture(fixture)
         return true
     end
     
