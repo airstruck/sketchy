@@ -49,14 +49,14 @@ local jointMethodByType = {
 
 local function drawDistanceJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(0, 255, 0, 128)
+    lg.setColor(self.distanceJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawFrictionJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(255, 0, 128, 128)
+    lg.setColor(self.frictionJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
@@ -67,21 +67,21 @@ end
 
 local function drawMotorJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(0, 160, 160, 128)
+    lg.setColor(self.motorJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawMouseJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(0, 255, 255, 128)
+    lg.setColor(self.mouseJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawPrismaticJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(128, 192, 160, 128)
+    lg.setColor(self.prismaticJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
@@ -89,7 +89,7 @@ end
 local function drawPulleyJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
     local gx1, gy1, gx2, gy2 = joint:getGroundAnchors( )
-    lg.setColor(0, 128, 255, 128)
+    lg.setColor(self.pulleyJointColor)
     lg.line(x1, y1, gx1, gy1)
     lg.line(gx1, gy1, gx2, gy2)
     lg.line(gx2, gy2, x2, y2)
@@ -98,28 +98,28 @@ end
 
 local function drawRevoluteJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(128, 255, 0, 128)
+    lg.setColor(self.revoluteJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawRopeJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(128, 128, 0, 128)
+    lg.setColor(self.ropeJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawWeldJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(255, 128, 0, 128)
+    lg.setColor(self.weldJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
 
 local function drawWheelJoint (self, joint)
     local x1, y1, x2, y2 = joint:getAnchors()
-    lg.setColor(128, 160, 128, 128)
+    lg.setColor(self.wheelJointColor)
     lg.line(x1, y1, x2, y2)
     lg.points(x1, y1, x2, y2)
 end
@@ -135,39 +135,52 @@ end
 
 local function drawBodyContacts (self, body)
     local contacts = body:getContactList()
-    lg.setColor(255, 0, 0)
+    lg.setColor(self.contactIndicatorColor)
     for i = 1, #contacts do
         self:drawContact(contacts[i])
     end
 end
 
 local function drawBodyAngle (self, body)
-    lg.setColor(255, 255, 255, 64)
+    lg.setColor(self.angleIndicatorColor)
     local angle = body:getAngle()
-    local vx = math.cos(angle) * self.fatness * 6 / self.scale
-    local vy = math.sin(angle) * self.fatness * 6 / self.scale
+    local size = self.angleIndicatorSize / self.scale
+    local vx = math.cos(angle) * size
+    local vy = math.sin(angle) * size
+    local sharp = self.angleIndicatorSharpness
     local x, y = body:getPosition()
     lg.polygon('fill',
-        x - vy / 3, y + vx / 3,
+        x - vy / sharp, y + vx / sharp,
         x + vx, y + vy,
-        x + vy / 3, y - vx / 3)
+        x + vy / sharp, y - vx / sharp)
 end
 
 local function drawContact (self, contact)
     if self.drawnObjects[contact] then return end
     self.drawnObjects[contact] = true
-    
     local x1, y1, x2, y2 = contact:getPositions()
+    local size = self.contactIndicatorSize / self.scale
+    local segments = self.contactIndicatorSegments
     if x1 then
-        lg.circle('fill', x1, y1, self.fatness * 2 / self.scale, 8)
+        lg.circle('fill', x1, y1, size, segments)
     end
     if x2 then
-        lg.circle('fill', x2, y2, self.fatness * 2 / self.scale, 8)
+        lg.circle('fill', x2, y2, size, segments)
     end
 end
 
 local function drawFixture (self, fixture)
-    lg.setColor(0, 0, 255, 128)
+    local body = fixture:getBody()
+    local bodyType = body:getType()
+    if bodyType == 'static' then
+        lg.setColor(self.staticFixtureColor)
+    elseif bodyType == 'kinematic' then
+        lg.setColor(self.kinematicFixtureColor)
+    elseif body:isAwake() then
+        lg.setColor(self.dynamicFixtureColor)
+    else
+        lg.setColor(self.sleepingFixtureColor)
+    end
     self:drawShape(fixture:getShape(), fixture)
 end
 
@@ -265,8 +278,8 @@ local function drawWorld (self, world)
     
     lg.push('all')
     
-    lg.setLineWidth(self.fatness / self.scale)
-    lg.setPointSize(2 * self.fatness)
+    lg.setLineWidth(self.jointLineWidth / self.scale)
+    lg.setPointSize(self.jointPointSize)
     
     -- translate center of viewport to origin; rotate to angle
     lg.translate(x + w, y + h)
@@ -374,7 +387,35 @@ end
 
 return function ()
     return {
-        -- default values
+        -- internal
+        drawnObjects = {},
+        -- misc. colors and sizes
+        angleIndicatorColor = { 255, 255, 255, 64 }, 
+        angleIndicatorSize = 12,
+        angleIndicatorSharpness = 3,
+        contactIndicatorColor = { 255, 0, 0 }, 
+        contactIndicatorSize = 4,
+        contactIndicatorSegments = 8,
+        jointLineWidth = 2,
+        jointPointSize = 4,
+        -- fixture colors
+        staticFixtureColor = { 255, 0, 0, 128 },
+        kinematicFixtureColor = { 128, 0, 128, 128 },
+        dynamicFixtureColor = { 0, 0, 255, 128 },
+        sleepingFixtureColor = { 0, 0, 128, 128 },
+        -- joint colors
+        distanceJointColor = { 0, 255, 0, 128 }, 
+        frictionJointColor = { 255, 0, 128, 128 },
+        gearJointColor = { 1, 1, 1, 128 },
+        motorJointColor = { 0, 160, 160, 128 },
+        mouseJointColor = { 0, 255, 255, 128 },
+        prismaticJointColor = { 128, 192, 160, 128 },
+        pulleyJointColor = { 0, 128, 255, 128 },
+        revoluteJointColor = { 128, 255, 0, 128 },
+        ropeJointColor = { 128, 128, 0, 128 },
+        weldJointColor = { 255, 128, 0, 128 },
+        wheelJointColor = { 128, 160, 128, 128 },
+        -- initial values
         left = 0,
         top = 0,
         width = 800,
@@ -383,8 +424,6 @@ return function ()
         angle = 0,
         cameraX = 0,
         cameraY = 0,
-        fatness = 2,
-        drawnObjects = {},
         -- base types
         drawBodyAngle = drawBodyAngle,
         drawBodyContacts = drawBodyContacts,
@@ -416,18 +455,18 @@ return function ()
         presentFixture = presentFixture,
         presentJoint = presentJoint,
         -- api
+        draw = draw,
         setAngle = setAngle,
         getAngle = getAngle,
         setCamera = setCamera,
         getCamera = getCamera,
-        setViewport = setViewport,
-        getViewport = getViewport,
-        setScale = setScale,
-        getScale = getScale,
-        draw = draw,
-        screenToWorld = screenToWorld,
-        worldToScreen = worldToScreen,
         setPresenter = setPresenter,
         getPresenter = getPresenter,
+        setScale = setScale,
+        getScale = getScale,
+        setViewport = setViewport,
+        getViewport = getViewport,
+        screenToWorld = screenToWorld,
+        worldToScreen = worldToScreen,
     }
 end
