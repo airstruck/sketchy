@@ -12,7 +12,8 @@ local shapeMethodByType = {
 local function drawCircleShape (self, shape, fixture)
     local body = fixture:getBody()
     local x, y = body:getWorldPoint(shape:getPoint())
-    lg.circle('fill', x, y, shape:getRadius())
+    local r = shape:getRadius()
+    lg.circle('fill', x, y, r, math.max(10, r * self.scale))
 end
 
 local function drawPolygonShape (self, shape, fixture)
@@ -143,13 +144,13 @@ end
 local function drawBodyAngle (self, body)
     lg.setColor(255, 255, 255, 64)
     local angle = body:getAngle()
-    local vx = math.cos(angle) * self.fatness * 4
-    local vy = math.sin(angle) * self.fatness * 4
+    local vx = math.cos(angle) * self.fatness * 6 / self.scale
+    local vy = math.sin(angle) * self.fatness * 6 / self.scale
     local x, y = body:getPosition()
     lg.polygon('fill',
-        x - vy / 4, y + vx / 4,
+        x - vy / 3, y + vx / 3,
         x + vx, y + vy,
-        x + vy / 4, y - vx / 4)
+        x + vy / 3, y - vx / 3)
 end
 
 local function drawContact (self, contact)
@@ -158,10 +159,10 @@ local function drawContact (self, contact)
     
     local x1, y1, x2, y2 = contact:getPositions()
     if x1 then
-        lg.circle('fill', x1, y1, self.fatness)
+        lg.circle('fill', x1, y1, self.fatness * 2 / self.scale, 8)
     end
     if x2 then
-        lg.circle('fill', x2, y2, self.fatness)
+        lg.circle('fill', x2, y2, self.fatness * 2 / self.scale, 8)
     end
 end
 
