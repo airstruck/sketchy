@@ -1,4 +1,5 @@
-local lg, lm = love.graphics, love.math
+local lg = love.graphics
+local math = math
 
 -- shape types
 
@@ -22,8 +23,13 @@ local function drawPolygonShape (self, shape, fixture)
 end
 
 local function drawChainShape (self, shape, fixture)
+    if self.drawnObjects[fixture] then return end
+    self.drawnObjects[fixture] = true
     local body = fixture:getBody()
-    lg.polygon('line', body:getWorldPoints(shape:getPoints()))
+    local p = { body:getWorldPoints(shape:getPoints()) }
+    for i = 1, #p - 2, 2 do
+        lg.line(p[i], p[i + 1], p[i + 2], p[i + 3])
+    end
 end
 
 local function drawEdgeShape (self, shape, fixture)
@@ -148,7 +154,7 @@ local function drawBodyAngle (self, body)
     local vx = math.cos(angle) * size
     local vy = math.sin(angle) * size
     local sharp = self.angleIndicatorSharpness
-    local x, y = body:getPosition()
+    local x, y = body:getWorldCenter()
     lg.polygon('fill',
         x - vy / sharp, y + vx / sharp,
         x + vx, y + vy,
@@ -385,6 +391,19 @@ local function getPresenter (self, object)
     end
 end
 
+local function snapScreenPoint (self, x, y, factor)
+    x, y = self:screenToWorld(x, y)
+    x, y = self:snapWorldPoint(x, y, factor)
+    return self:worldToScreen(x, y)
+end
+
+local function snapWorldPoint (self, x, y, factor)
+    factor = factor or 1
+    x = math.floor(x / factor + 0.5) * factor
+    y = math.floor(y / factor + 0.5) * factor
+    return x, y
+end
+
 return function ()
     return {
         -- internal
@@ -468,5 +487,7 @@ return function ()
         getViewport = getViewport,
         screenToWorld = screenToWorld,
         worldToScreen = worldToScreen,
+        snapScreenPoint = snapScreenPoint,
+        snapWorldPoint = snapWorldPoint,
     }
 end
